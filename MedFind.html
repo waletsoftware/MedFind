@@ -1,0 +1,2322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedFind Ethiopia — Pharmacy Directory</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1a;
+    --surface: #111827;
+    --surface2: #1a2332;
+    --border: #1e2d42;
+    --border2: #2a3f5a;
+    --accent: #00d4a0;
+    --accent2: #0099cc;
+    --accent3: #f59e0b;
+    --text: #e8f0fe;
+    --text2: #8da4c0;
+    --text3: #4a6080;
+    --danger: #ef4444;
+    --success: #10b981;
+    --warn: #f59e0b;
+    --card-glow: 0 0 40px rgba(0, 212, 160, 0.06);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* AMBIENT BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(0,212,160,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(0,153,204,0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,15,26,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 68px;
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px; color: var(--text);
+    text-decoration: none;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .logo span { color: var(--accent); font-style: italic; }
+
+  .nav-links { display: flex; gap: 8px; align-items: center; }
+  .nav-btn {
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-family: 'Sora', sans-serif;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+    border: none;
+  }
+  .nav-btn.ghost {
+    background: transparent; color: var(--text2);
+  }
+  .nav-btn.ghost:hover { color: var(--text); background: var(--surface); }
+  .nav-btn.primary {
+    background: var(--accent); color: #0a0f1a; font-weight: 600;
+  }
+  .nav-btn.primary:hover { background: #00f0b5; transform: translateY(-1px); }
+
+  /* ─── PAGES ─── */
+  .page { display: none; position: relative; z-index: 1; }
+  .page.active { display: block; }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: calc(100vh - 68px);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 80px 24px 60px;
+    text-align: center;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,212,160,0.1);
+    border: 1px solid rgba(0,212,160,0.25);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 12px; font-weight: 500; color: var(--accent);
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.4); }
+  }
+
+  .hero h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(42px, 7vw, 80px);
+    line-height: 1.05;
+    letter-spacing: -1px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  .hero h1 em { color: var(--accent); font-style: italic; }
+
+  .hero p {
+    font-size: 17px; color: var(--text2); line-height: 1.7;
+    max-width: 520px; margin: 0 auto 40px;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── SEARCH BAR ─── */
+  .search-wrap {
+    width: 100%; max-width: 640px;
+    animation: fadeUp 0.6s 0.3s ease both;
+    margin-bottom: 60px;
+  }
+  .search-box {
+    display: flex;
+    background: var(--surface);
+    border: 1.5px solid var(--border2);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(0,212,160,0.1);
+  }
+  .search-box input {
+    flex: 1; padding: 18px 20px;
+    background: none; border: none; outline: none;
+    color: var(--text); font-family: 'Sora', sans-serif; font-size: 15px;
+  }
+  .search-box input::placeholder { color: var(--text3); }
+  .search-box button {
+    padding: 12px 24px; margin: 6px;
+    background: var(--accent); color: #0a0f1a;
+    border: none; border-radius: 10px;
+    font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .search-box button:hover { background: #00f0b5; }
+
+  .search-tags {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: center; margin-top: 14px;
+  }
+  .search-tag {
+    padding: 5px 14px; border-radius: 100px;
+    background: var(--surface); border: 1px solid var(--border);
+    font-size: 12px; color: var(--text2);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .search-tag:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── STATS ─── */
+  .stats-bar {
+    display: flex; gap: 40px; justify-content: center; flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px; font-weight: 500; color: var(--accent);
+    display: block;
+  }
+  .stat-label { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  /* ─── SECTION ─── */
+  .section {
+    padding: 80px 32px;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .section-head h2 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 32px; font-weight: 400;
+  }
+  .section-head a {
+    font-size: 13px; color: var(--accent); text-decoration: none;
+    cursor: pointer;
+  }
+  .section-head a:hover { text-decoration: underline; }
+
+  /* ─── PHARMACY CARDS ─── */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+
+  .pharmacy-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .pharmacy-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .pharmacy-card:hover {
+    border-color: var(--border2);
+    transform: translateY(-3px);
+    box-shadow: var(--card-glow), 0 20px 40px rgba(0,0,0,0.3);
+  }
+  .pharmacy-card:hover::before { opacity: 1; }
+
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .card-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: linear-gradient(135deg, rgba(0,212,160,0.15), rgba(0,153,204,0.1));
+    border: 1px solid rgba(0,212,160,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .status-badge {
+    padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 600;
+  }
+  .status-badge.open { background: rgba(16,185,129,0.15); color: var(--success); }
+  .status-badge.closed { background: rgba(239,68,68,0.12); color: var(--danger); }
+
+  .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .card-loc { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 5px; margin-bottom: 14px; }
+
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .card-tag {
+    padding: 3px 10px; border-radius: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    font-size: 11px; color: var(--text2);
+  }
+
+  .card-footer { display: flex; justify-content: space-between; align-items: center; }
+  .card-meta { font-size: 12px; color: var(--text3); }
+  .card-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--accent);
+  }
+
+  /* ─── MEDICINE RESULTS ─── */
+  .med-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+  .med-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .med-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px rgba(0,212,160,0.15);
+  }
+
+  .med-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .med-name { font-size: 15px; font-weight: 600; }
+  .med-type {
+    font-size: 10px; padding: 3px 9px; border-radius: 5px;
+    background: rgba(0,153,204,0.12); color: var(--accent2);
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  .med-generic { font-size: 12px; color: var(--text2); margin-bottom: 10px; font-style: italic; }
+
+  .med-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px; color: var(--accent); font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .med-price span { font-size: 12px; color: var(--text3); font-weight: 400; font-family: 'Sora', sans-serif; }
+
+  .med-pharmacy {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px;
+    background: var(--surface2); border-radius: 8px;
+    font-size: 12px; color: var(--text2);
+  }
+  .med-pharmacy strong { color: var(--text); }
+
+  .med-stock {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; margin-top: 10px;
+  }
+  .stock-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .stock-dot.in { background: var(--success); }
+  .stock-dot.low { background: var(--warn); }
+  .stock-dot.out { background: var(--danger); }
+
+  /* ─── MODALS ─── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(5,8,15,0.85);
+    backdrop-filter: blur(8px);
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    width: 100%; max-width: 520px;
+    max-height: 90vh; overflow-y: auto;
+    padding: 36px;
+    animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.92) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal.wide { max-width: 700px; }
+
+  .modal-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 28px;
+  }
+  .modal-head h2 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 26px; font-weight: 400;
+  }
+  .modal-head p { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .modal-close {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text2); font-size: 18px; line-height: 1;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0;
+  }
+  .modal-close:hover { background: var(--danger); color: white; border-color: var(--danger); }
+
+  /* ─── FORMS ─── */
+  .form-group { margin-bottom: 18px; }
+  .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 13px 16px;
+    background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: 10px; color: var(--text);
+    font-family: 'Sora', sans-serif; font-size: 14px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--accent);
+  }
+  .form-group select option { background: var(--surface2); }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .form-tabs { display: flex; gap: 6px; margin-bottom: 28px; }
+  .form-tab {
+    flex: 1; padding: 12px;
+    border-radius: 10px; border: 1.5px solid var(--border);
+    background: transparent; color: var(--text2);
+    font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .form-tab.active {
+    border-color: var(--accent);
+    background: rgba(0,212,160,0.08);
+    color: var(--accent);
+  }
+
+  .btn {
+    width: 100%; padding: 14px;
+    border-radius: 10px; border: none;
+    font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; margin-top: 8px;
+  }
+  .btn.primary { background: var(--accent); color: #0a0f1a; }
+  .btn.primary:hover { background: #00f0b5; transform: translateY(-1px); }
+  .btn.secondary {
+    background: var(--surface2); color: var(--text2);
+    border: 1px solid var(--border);
+  }
+  .btn.secondary:hover { border-color: var(--border2); color: var(--text); }
+
+  .form-link { text-align: center; font-size: 13px; color: var(--text2); margin-top: 16px; }
+  .form-link a { color: var(--accent); cursor: pointer; text-decoration: none; }
+  .form-link a:hover { text-decoration: underline; }
+
+  /* ─── ROLE SELECTOR ─── */
+  .role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .role-card {
+    padding: 20px 16px; border-radius: 12px;
+    border: 2px solid var(--border);
+    cursor: pointer; transition: all 0.2s; text-align: center;
+    background: var(--surface2);
+  }
+  .role-card.selected {
+    border-color: var(--accent);
+    background: rgba(0,212,160,0.08);
+  }
+  .role-card .role-icon { font-size: 28px; margin-bottom: 8px; }
+  .role-card .role-name { font-size: 13px; font-weight: 600; }
+  .role-card .role-desc { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+  /* ─── PHARMACY DETAIL ─── */
+  .detail-header {
+    background: linear-gradient(135deg, var(--surface), var(--surface2));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 24px;
+    display: flex; gap: 20px; align-items: flex-start;
+  }
+  .detail-icon {
+    width: 64px; height: 64px; border-radius: 16px;
+    background: linear-gradient(135deg, rgba(0,212,160,0.2), rgba(0,153,204,0.15));
+    border: 1px solid rgba(0,212,160,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; flex-shrink: 0;
+  }
+  .detail-info h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .detail-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; }
+  .detail-meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text2); }
+
+  .detail-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .detail-tab {
+    padding: 10px 20px; border-bottom: 2px solid transparent;
+    font-size: 13px; font-weight: 500; color: var(--text2);
+    cursor: pointer; transition: all 0.2s; margin-bottom: -1px;
+  }
+  .detail-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ─── ADMIN PANEL ─── */
+  .admin-layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 68px); }
+  .admin-sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+  }
+  .admin-nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; color: var(--text2);
+    cursor: pointer; transition: all 0.2s; margin-bottom: 4px;
+  }
+  .admin-nav-item.active, .admin-nav-item:hover {
+    background: var(--surface2); color: var(--text);
+  }
+  .admin-nav-item.active { color: var(--accent); }
+
+  .admin-content { padding: 32px; }
+  .admin-header { margin-bottom: 28px; }
+  .admin-header h1 { font-size: 24px; font-weight: 700; }
+  .admin-header p { font-size: 14px; color: var(--text2); margin-top: 4px; }
+
+  .admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .admin-stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+  }
+  .admin-stat-card .label { font-size: 12px; color: var(--text2); margin-bottom: 8px; }
+  .admin-stat-card .value { font-size: 28px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .admin-stat-card .value.green { color: var(--success); }
+  .admin-stat-card .value.yellow { color: var(--warn); }
+  .admin-stat-card .value.blue { color: var(--accent2); }
+
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: var(--surface2); }
+  th { padding: 14px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+  td { padding: 14px 16px; font-size: 13px; border-top: 1px solid var(--border); }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .action-btn {
+    padding: 5px 14px; border-radius: 6px; font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; border: none; font-family: 'Sora', sans-serif;
+    margin-right: 6px;
+  }
+  .action-btn.approve { background: rgba(16,185,129,0.15); color: var(--success); }
+  .action-btn.approve:hover { background: var(--success); color: white; }
+  .action-btn.reject { background: rgba(239,68,68,0.1); color: var(--danger); }
+  .action-btn.reject:hover { background: var(--danger); color: white; }
+  .action-btn.view { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+
+  /* ─── DASHBOARD (Pharmacy Holder) ─── */
+  .dash-layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 68px); }
+  .dash-sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+  }
+  .dash-profile {
+    padding: 16px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 12px;
+    margin-bottom: 20px; text-align: center;
+  }
+  .dash-avatar {
+    width: 52px; height: 52px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin: 0 auto 10px;
+  }
+  .dash-profile h3 { font-size: 14px; font-weight: 600; }
+  .dash-profile p { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .dash-profile .pending-badge {
+    display: inline-block; margin-top: 8px;
+    padding: 3px 10px; border-radius: 100px;
+    background: rgba(245,158,11,0.15); color: var(--warn);
+    font-size: 10px; font-weight: 600;
+  }
+
+  .dash-content { padding: 32px; }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 999;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 12px; padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 14px; min-width: 280px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: bottom right;
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: scale(0.8) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .toast.success { border-color: rgba(16,185,129,0.4); }
+  .toast.success .toast-icon { color: var(--success); }
+  .toast.error { border-color: rgba(239,68,68,0.4); }
+  .toast.error .toast-icon { color: var(--danger); }
+  .toast-icon { font-size: 20px; }
+
+  /* ─── SEARCH RESULTS PAGE ─── */
+  .results-layout {
+    display: grid; grid-template-columns: 260px 1fr;
+    gap: 24px; padding: 32px; max-width: 1200px; margin: 0 auto;
+  }
+  .filters-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px; height: fit-content;
+    position: sticky; top: 90px;
+  }
+  .filter-section { margin-bottom: 24px; }
+  .filter-section h4 { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+
+  .filter-option {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; font-size: 13px; color: var(--text2);
+    cursor: pointer;
+  }
+  .filter-option input[type=checkbox] { accent-color: var(--accent); width: 15px; height: 15px; }
+
+  .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .results-count { font-size: 14px; color: var(--text2); }
+  .results-count strong { color: var(--text); }
+
+  .sort-select {
+    padding: 8px 14px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text2);
+    font-family: 'Sora', sans-serif; font-size: 13px;
+    outline: none; cursor: pointer;
+  }
+
+  /* ─── MAP PLACEHOLDER ─── */
+  .map-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    height: 200px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px; color: var(--text3); font-size: 13px;
+  }
+  .map-box .map-icon { font-size: 32px; }
+
+  /* ─── ALERTS ─── */
+  .alert {
+    padding: 14px 16px; border-radius: 10px;
+    font-size: 13px; margin-bottom: 16px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .alert.info { background: rgba(0,153,204,0.1); border: 1px solid rgba(0,153,204,0.2); color: var(--accent2); }
+  .alert.warn { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); color: var(--warn); }
+  .alert.success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: var(--success); }
+
+  /* ─── UTILITIES ─── */
+  .hidden { display: none !important; }
+  .text-accent { color: var(--accent); }
+  .text-muted { color: var(--text2); }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  /* ══════════════════════════════════════
+     ─── ADVERTISING SYSTEM ───
+  ══════════════════════════════════════ */
+
+  /* ─── AD LABEL ─── */
+  .ad-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 1.2px;
+    text-transform: uppercase; color: var(--text3);
+    display: flex; align-items: center; gap: 5px;
+    margin-bottom: 8px;
+  }
+  .ad-label::before, .ad-label::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ─── SIDEBAR AD COLUMN ─── */
+  .page-with-ads {
+    display: grid;
+    grid-template-columns: 260px 1fr 220px;
+    gap: 24px;
+    padding: 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .ad-sidebar {
+    position: sticky; top: 90px;
+    height: fit-content;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+
+  /* ─── SIDEBAR AD UNIT ─── */
+  .ad-unit {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .ad-unit:hover {
+    border-color: var(--border2);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+  }
+  .ad-unit-banner {
+    height: 100px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    position: relative; overflow: hidden;
+  }
+  .ad-unit-banner::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.4));
+  }
+  .ad-unit-body { padding: 14px; }
+  .ad-unit-body .ad-brand { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+  .ad-unit-body .ad-title { font-size: 13px; font-weight: 600; margin: 4px 0; line-height: 1.35; }
+  .ad-unit-body .ad-desc { font-size: 11px; color: var(--text2); line-height: 1.5; margin-bottom: 10px; }
+  .ad-unit-cta {
+    display: block; width: 100%; padding: 8px;
+    border-radius: 7px; border: none; text-align: center;
+    font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .ad-unit-cta.green { background: rgba(0,212,160,0.15); color: var(--accent); }
+  .ad-unit-cta.green:hover { background: var(--accent); color: #0a0f1a; }
+  .ad-unit-cta.blue { background: rgba(0,153,204,0.15); color: var(--accent2); }
+  .ad-unit-cta.blue:hover { background: var(--accent2); color: white; }
+  .ad-unit-cta.gold { background: rgba(245,158,11,0.15); color: var(--warn); }
+  .ad-unit-cta.gold:hover { background: var(--warn); color: #0a0f1a; }
+
+  /* Compact sidebar ad */
+  .ad-unit-compact {
+    padding: 14px;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .ad-unit-compact .ad-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .ad-unit-compact .ad-text .ad-brand { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+  .ad-unit-compact .ad-text .ad-title { font-size: 12px; font-weight: 600; margin: 2px 0; }
+  .ad-unit-compact .ad-text .ad-sub { font-size: 11px; color: var(--text2); }
+
+  /* ─── HOME HERO BANNER AD ─── */
+  .hero-ad-banner {
+    width: 100%; max-width: 700px;
+    background: linear-gradient(135deg, rgba(0,212,160,0.08), rgba(0,153,204,0.06));
+    border: 1px solid rgba(0,212,160,0.2);
+    border-radius: 14px;
+    padding: 16px 22px;
+    display: flex; align-items: center; gap: 16px;
+    cursor: pointer; transition: all 0.2s;
+    margin: 0 auto 24px;
+    animation: fadeUp 0.6s 0.35s ease both;
+  }
+  .hero-ad-banner:hover {
+    border-color: rgba(0,212,160,0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 16px 40px rgba(0,212,160,0.1);
+  }
+  .hero-ad-banner .had-icon { font-size: 32px; flex-shrink: 0; }
+  .hero-ad-banner .had-content { flex: 1; }
+  .hero-ad-banner .had-label { font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+  .hero-ad-banner .had-title { font-size: 15px; font-weight: 600; margin: 2px 0; }
+  .hero-ad-banner .had-sub { font-size: 12px; color: var(--text2); }
+  .hero-ad-banner .had-cta {
+    padding: 8px 18px; border-radius: 8px;
+    background: var(--accent); color: #0a0f1a;
+    font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 700;
+    border: none; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .hero-ad-banner .had-cta:hover { background: #00f0b5; }
+
+  /* ─── SPONSORED PHARMACY CARD ─── */
+  .pharmacy-card.sponsored {
+    border-color: rgba(245,158,11,0.3);
+    background: linear-gradient(135deg, var(--surface), rgba(245,158,11,0.04));
+  }
+  .pharmacy-card.sponsored::before { background: linear-gradient(90deg, var(--warn), #f97316); opacity: 1; }
+  .sponsored-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px; border-radius: 5px;
+    background: rgba(245,158,11,0.15); color: var(--warn);
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  /* ─── SPONSORED MEDICINE CARD ─── */
+  .med-card.sponsored {
+    border-color: rgba(245,158,11,0.3);
+    background: linear-gradient(160deg, var(--surface), rgba(245,158,11,0.04));
+    position: relative;
+  }
+  .med-card.sponsored::after {
+    content: '★ SPONSORED';
+    position: absolute; top: 10px; right: 10px;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.8px;
+    color: var(--warn); background: rgba(245,158,11,0.12);
+    padding: 2px 7px; border-radius: 4px;
+  }
+
+  /* ─── INLINE AD STRIP (between results) ─── */
+  .ad-strip {
+    grid-column: 1 / -1;
+    background: linear-gradient(90deg, var(--surface), rgba(0,153,204,0.05), var(--surface));
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 16px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .ad-strip:hover { border-color: var(--accent2); }
+  .ad-strip .as-icon { font-size: 28px; }
+  .ad-strip .as-label { font-size: 10px; font-weight: 700; color: var(--accent2); text-transform: uppercase; letter-spacing: 1px; }
+  .ad-strip .as-title { font-size: 14px; font-weight: 600; margin: 2px 0; }
+  .ad-strip .as-sub { font-size: 12px; color: var(--text2); }
+  .ad-strip .as-cta {
+    margin-left: auto; padding: 8px 16px;
+    background: rgba(0,153,204,0.15); color: var(--accent2);
+    border-radius: 7px; border: none; font-family: 'Sora', sans-serif;
+    font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .ad-strip .as-cta:hover { background: var(--accent2); color: white; }
+
+  /* ─── SEARCH PAGE with sidebar ad ─── */
+  .results-layout-with-ad {
+    display: grid; grid-template-columns: 240px 1fr 210px;
+    gap: 22px; padding: 32px; max-width: 1400px; margin: 0 auto;
+  }
+
+  /* ─── ADMIN ADS TAB ─── */
+  .ad-package-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 28px; }
+  .ad-package-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 22px;
+    text-align: center; position: relative;
+    transition: all 0.2s;
+  }
+  .ad-package-card.featured { border-color: var(--accent); }
+  .ad-package-card .pkg-badge {
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #0a0f1a;
+    font-size: 10px; font-weight: 700; padding: 3px 12px; border-radius: 100px;
+    white-space: nowrap;
+  }
+  .ad-package-card .pkg-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .ad-package-card .pkg-price { font-family: 'JetBrains Mono', monospace; font-size: 26px; color: var(--accent); margin: 8px 0; }
+  .ad-package-card .pkg-period { font-size: 11px; color: var(--text3); margin-bottom: 14px; }
+  .ad-package-card ul { list-style: none; text-align: left; font-size: 12px; color: var(--text2); display: grid; gap: 7px; margin-bottom: 16px; }
+  .ad-package-card ul li::before { content: '✓ '; color: var(--accent); font-weight: 700; }
+  .ad-package-card .pkg-btn {
+    width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text2);
+    font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .ad-package-card.featured .pkg-btn { background: var(--accent); color: #0a0f1a; border-color: var(--accent); }
+  .ad-package-card .pkg-btn:hover { opacity: 0.85; }
+
+  /* ─── ACTIVE ADS TABLE ─── */
+  .ad-status-active { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--success); }
+  .ad-status-active::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--success); display: inline-block; animation: pulse 2s infinite; }
+  .ad-status-expired { font-size: 12px; color: var(--text3); }
+  .ad-status-pending { font-size: 12px; color: var(--warn); font-weight: 600; }
+
+  /* ─── FLOATING STICKY AD (bottom of page on mobile / home) ─── */
+  .sticky-ad {
+    position: fixed; bottom: 80px; right: 20px; z-index: 50;
+    width: 200px;
+    background: var(--surface);
+    border: 1px solid rgba(0,212,160,0.3);
+    border-radius: 14px; padding: 14px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    animation: slideInRight 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    display: none;
+  }
+  @keyframes slideInRight {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .sticky-ad-close {
+    position: absolute; top: 8px; right: 8px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--surface2); border: none; cursor: pointer;
+    font-size: 12px; color: var(--text3); line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sticky-ad-close:hover { color: var(--danger); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ NAV ═══════════════════ -->
+<nav>
+  <a class="logo" href="#" onclick="showPage('home')">
+    <div class="logo-icon">💊</div>
+    MedFind <span>Ethiopia</span>
+  </a>
+  <div class="nav-links" id="nav-links">
+    <button class="nav-btn ghost" onclick="showPage('home')">Home</button>
+    <button class="nav-btn ghost" onclick="showSearchPage('')">Browse</button>
+    <button class="nav-btn ghost" onclick="openModal('loginModal')">Log In</button>
+    <button class="nav-btn primary" onclick="openModal('signupModal')">Register</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════ HOME PAGE ═══════════════════ -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div class="hero-badge">🇪🇹 Serving pharmacies across Ethiopia</div>
+    <h1>Find any medicine,<br><em>anywhere in Ethiopia</em></h1>
+    <p>Search across hundreds of registered pharmacies. Compare prices, check availability, and find the nearest location — instantly.</p>
+
+    <div class="search-wrap">
+      <div class="search-box">
+        <input type="text" id="hero-search" placeholder="Search by medicine name, generic name, or condition…" onkeydown="if(event.key==='Enter') showSearchPage(this.value)">
+        <button onclick="showSearchPage(document.getElementById('hero-search').value)">Search Medicines</button>
+      </div>
+      <div class="search-tags">
+        <span class="search-tag" onclick="showSearchPage('Amoxicillin')">Amoxicillin</span>
+        <span class="search-tag" onclick="showSearchPage('Paracetamol')">Paracetamol</span>
+        <span class="search-tag" onclick="showSearchPage('Metformin')">Metformin</span>
+        <span class="search-tag" onclick="showSearchPage('Artemether')">Artemether</span>
+        <span class="search-tag" onclick="showSearchPage('Omeprazole')">Omeprazole</span>
+        <span class="search-tag" onclick="showSearchPage('Ibuprofen')">Ibuprofen</span>
+      </div>
+    </div>
+
+    <!-- ★ HERO BANNER AD ★ -->
+    <div class="hero-ad-banner" onclick="showToast('Opening advertiser page…','success')">
+      <div class="had-icon">🧬</div>
+      <div class="had-content">
+        <div class="had-label">★ Sponsored</div>
+        <div class="had-title">Ethio PharmaCo — Wholesale Medical Supplies</div>
+        <div class="had-sub">Direct distributor for 500+ hospitals &amp; pharmacies across Ethiopia</div>
+      </div>
+      <button class="had-cta">Visit Now</button>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat"><span class="stat-num">248</span><div class="stat-label">Registered Pharmacies</div></div>
+      <div class="stat"><span class="stat-num">4,800+</span><div class="stat-label">Medicine Listings</div></div>
+      <div class="stat"><span class="stat-num">32</span><div class="stat-label">Cities Covered</div></div>
+      <div class="stat"><span class="stat-num">99.2%</span><div class="stat-label">Verified Data</div></div>
+    </div>
+  </div>
+
+  <!-- Featured Pharmacies -->
+  <div class="section">
+    <div class="section-head">
+      <h2>Featured Pharmacies</h2>
+      <a onclick="showSearchPage('')">View all →</a>
+    </div>
+    <div class="grid" id="featured-pharmacies"></div>
+  </div>
+
+  <!-- Recently Added Medicines -->
+  <div class="section" style="padding-top:0">
+    <div class="section-head">
+      <h2>Recently Added</h2>
+      <a onclick="showSearchPage('')">See all medicines →</a>
+    </div>
+    <div class="med-grid" id="recent-medicines"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SEARCH RESULTS ═══════════════════ -->
+<div id="page-search" class="page">
+  <div class="results-layout-with-ad">
+    <!-- LEFT: FILTERS -->
+    <div class="filters-panel">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:20px">Filters</h3>
+
+      <div class="filter-section">
+        <h4>City</h4>
+        <div class="filter-option"><input type="checkbox" checked> Addis Ababa</div>
+        <div class="filter-option"><input type="checkbox"> Dire Dawa</div>
+        <div class="filter-option"><input type="checkbox"> Mekelle</div>
+        <div class="filter-option"><input type="checkbox"> Bahir Dar</div>
+        <div class="filter-option"><input type="checkbox"> Hawassa</div>
+        <div class="filter-option"><input type="checkbox"> Gondar</div>
+        <div class="filter-option"><input type="checkbox"> Jimma</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="filter-section">
+        <h4>Medicine Type</h4>
+        <div class="filter-option"><input type="checkbox" checked> Prescription (Rx)</div>
+        <div class="filter-option"><input type="checkbox" checked> Over the Counter</div>
+        <div class="filter-option"><input type="checkbox"> Controlled</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="filter-section">
+        <h4>Availability</h4>
+        <div class="filter-option"><input type="checkbox" checked> In Stock</div>
+        <div class="filter-option"><input type="checkbox"> Low Stock</div>
+        <div class="filter-option"><input type="checkbox"> Out of Stock</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="filter-section">
+        <h4>Price Range (ETB)</h4>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="number" placeholder="Min" style="width:80px;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Sora',sans-serif;font-size:12px;outline:none">
+          <span style="color:var(--text3)">—</span>
+          <input type="number" placeholder="Max" style="width:80px;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Sora',sans-serif;font-size:12px;outline:none">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="filter-section">
+        <h4>Open Now</h4>
+        <div class="filter-option"><input type="checkbox"> Show only open pharmacies</div>
+      </div>
+    </div>
+
+    <!-- MIDDLE: RESULTS -->
+    <div>
+      <div style="margin-bottom:20px">
+        <div class="search-box" style="max-width:100%">
+          <input type="text" id="results-search" placeholder="Refine your search…" onkeydown="if(event.key==='Enter') filterResults(this.value)">
+          <button onclick="filterResults(document.getElementById('results-search').value)">Search</button>
+        </div>
+      </div>
+
+      <div class="results-header">
+        <div class="results-count" id="results-count">Showing <strong>18</strong> results</div>
+        <select class="sort-select">
+          <option>Sort: Relevance</option>
+          <option>Price: Low to High</option>
+          <option>Price: High to Low</option>
+          <option>Nearest First</option>
+        </select>
+      </div>
+
+      <div class="med-grid" id="search-results"></div>
+    </div>
+
+    <!-- RIGHT: AD SIDEBAR -->
+    <div class="ad-sidebar">
+      <div class="ad-label">Advertisement</div>
+
+      <!-- Ad 1: Full card -->
+      <div class="ad-unit" onclick="showToast('Opening Medex Ethiopia…','success')">
+        <div class="ad-unit-banner" style="background:linear-gradient(135deg,#0d4a3a,#0a2a1f)">
+          <span style="position:relative;z-index:1">💊</span>
+        </div>
+        <div class="ad-unit-body">
+          <div class="ad-brand">Medex Ethiopia</div>
+          <div class="ad-title">Bulk Medicine Import at Best Prices</div>
+          <div class="ad-desc">Licensed importer of WHO-certified generics. Fast delivery to all regions.</div>
+          <button class="ad-unit-cta green">Learn More →</button>
+        </div>
+      </div>
+
+      <!-- Ad 2: Compact -->
+      <div class="ad-unit" onclick="showToast('Opening HealthTech Ethiopia…','success')">
+        <div class="ad-unit-compact">
+          <div class="ad-icon" style="background:rgba(0,153,204,0.15)">🖥️</div>
+          <div class="ad-text">
+            <div class="ad-brand">HealthTech ET</div>
+            <div class="ad-title">Pharmacy POS Software</div>
+            <div class="ad-sub">Free 30-day trial</div>
+          </div>
+        </div>
+        <div style="padding:0 14px 12px">
+          <button class="ad-unit-cta blue">Try Free →</button>
+        </div>
+      </div>
+
+      <!-- Ad 3: Full card -->
+      <div class="ad-unit" onclick="showToast('Opening EthioMed Lab…','success')">
+        <div class="ad-unit-banner" style="background:linear-gradient(135deg,#2d1a00,#1a0f00)">
+          <span style="position:relative;z-index:1">🔬</span>
+        </div>
+        <div class="ad-unit-body">
+          <div class="ad-brand">EthioMed Lab</div>
+          <div class="ad-title">Quality Lab Reagents &amp; Diagnostics</div>
+          <div class="ad-desc">Serving labs &amp; hospitals in Addis Ababa, Dire Dawa, and beyond.</div>
+          <button class="ad-unit-cta gold">Get Quote →</button>
+        </div>
+      </div>
+
+      <!-- Ad 4: Compact -->
+      <div class="ad-unit" onclick="showToast('Opening Addis Pharmacy Training…','success')">
+        <div class="ad-unit-compact">
+          <div class="ad-icon" style="background:rgba(245,158,11,0.12)">🎓</div>
+          <div class="ad-text">
+            <div class="ad-brand">PharmEdu</div>
+            <div class="ad-title">Pharmacy CPD Courses</div>
+            <div class="ad-sub">EFDA-accredited online</div>
+          </div>
+        </div>
+        <div style="padding:0 14px 12px">
+          <button class="ad-unit-cta gold">Enroll Now →</button>
+        </div>
+      </div>
+
+      <div style="font-size:10px;color:var(--text3);text-align:center;line-height:1.6;padding:4px 0">
+        Want to advertise here?<br>
+        <a onclick="openModal('advertiseModal')" style="color:var(--accent);cursor:pointer;text-decoration:none">View Ad Packages →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PHARMACY DETAIL ═══════════════════ -->
+<div id="page-pharmacy" class="page">
+  <div style="display:grid;grid-template-columns:1fr 220px;gap:24px;padding:32px;max-width:1400px;margin:0 auto">
+    <div>
+      <button onclick="showPage('home')" style="background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Sora',sans-serif;font-size:13px;margin-bottom:20px">← Back</button>
+
+      <div class="detail-header" id="pharmacy-detail-header"></div>
+
+      <div class="detail-tabs">
+        <div class="detail-tab active" onclick="switchDetailTab(this,'tab-medicines')">Medicines (24)</div>
+        <div class="detail-tab" onclick="switchDetailTab(this,'tab-info')">Pharmacy Info</div>
+        <div class="detail-tab" onclick="switchDetailTab(this,'tab-location')">Location &amp; Hours</div>
+      </div>
+
+      <div id="tab-medicines" class="med-grid" style="gap:14px"></div>
+
+      <div id="tab-info" class="hidden">
+        <div style="max-width:560px">
+          <div class="alert info">ℹ️ All medicines listed here are verified by our admin team. Prices may vary. Contact the pharmacy directly to confirm.</div>
+          <div style="display:grid;gap:14px;margin-top:20px">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px">PHARMACY NAME</div>
+              <div style="font-size:15px" id="detail-name">—</div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px">LICENSE NUMBER</div>
+              <div class="mono" style="color:var(--accent)" id="detail-license">—</div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px">PHONE</div>
+              <div id="detail-phone">—</div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px">EMAIL</div>
+              <div id="detail-email">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-location" class="hidden">
+        <div style="max-width:560px">
+          <div class="map-box" style="margin-bottom:16px">
+            <div class="map-icon">🗺️</div>
+            <div>Map integration available</div>
+            <div style="font-size:11px;color:var(--text3)" id="detail-address">—</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px">
+            <h4 style="font-size:13px;margin-bottom:16px;color:var(--text2)">OPENING HOURS</h4>
+            <div style="display:grid;gap:10px;font-size:13px">
+              <div style="display:flex;justify-content:space-between"><span>Mon – Fri</span><span class="text-accent">8:00 AM – 8:00 PM</span></div>
+              <div style="display:flex;justify-content:space-between"><span>Saturday</span><span class="text-accent">9:00 AM – 6:00 PM</span></div>
+              <div style="display:flex;justify-content:space-between"><span>Sunday</span><span style="color:var(--danger)">Closed</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHARMACY PAGE AD SIDEBAR -->
+    <div class="ad-sidebar" style="padding-top:52px">
+      <div class="ad-label">Advertisement</div>
+
+      <div class="ad-unit" onclick="showToast('Opening Addis Medical Supplies…','success')">
+        <div class="ad-unit-banner" style="background:linear-gradient(135deg,#0a1a2d,#0d3060)">
+          <span style="position:relative;z-index:1">🏥</span>
+        </div>
+        <div class="ad-unit-body">
+          <div class="ad-brand">Addis Medical</div>
+          <div class="ad-title">Hospital &amp; Pharmacy Equipment</div>
+          <div class="ad-desc">Shelves, refrigerators, dispensing tools. Nationwide delivery.</div>
+          <button class="ad-unit-cta blue">Shop Now →</button>
+        </div>
+      </div>
+
+      <div class="ad-unit" onclick="showToast('Opening PharmaInsure…','success')">
+        <div class="ad-unit-compact">
+          <div class="ad-icon" style="background:rgba(16,185,129,0.12)">🛡️</div>
+          <div class="ad-text">
+            <div class="ad-brand">PharmaInsure</div>
+            <div class="ad-title">Pharmacy Insurance Plans</div>
+            <div class="ad-sub">From ETB 800/month</div>
+          </div>
+        </div>
+        <div style="padding:0 14px 12px">
+          <button class="ad-unit-cta green">Get Covered →</button>
+        </div>
+      </div>
+
+      <div class="ad-unit" onclick="showToast('Opening EthioWholesale…','success')">
+        <div class="ad-unit-compact">
+          <div class="ad-icon" style="background:rgba(245,158,11,0.12)">📦</div>
+          <div class="ad-text">
+            <div class="ad-brand">EthioWholesale</div>
+            <div class="ad-title">Bulk Medicine Orders</div>
+            <div class="ad-sub">Min order: 50 units</div>
+          </div>
+        </div>
+        <div style="padding:0 14px 12px">
+          <button class="ad-unit-cta gold">Order Now →</button>
+        </div>
+      </div>
+
+      <div style="font-size:10px;color:var(--text3);text-align:center;line-height:1.6">
+        Advertise here<br>
+        <a onclick="openModal('advertiseModal')" style="color:var(--accent);cursor:pointer">View plans →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ ADMIN PANEL ═══════════════════ -->
+<div id="page-admin" class="page">
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;padding:0 6px">Admin Panel</div>
+      <div class="admin-nav-item active" onclick="adminTab('tab-requests')">📋 Pharmacy Requests</div>
+      <div class="admin-nav-item" onclick="adminTab('tab-pharmacies')">🏥 All Pharmacies</div>
+      <div class="admin-nav-item" onclick="adminTab('tab-medicines')">💊 Medicine Registry</div>
+      <div class="admin-nav-item" onclick="adminTab('tab-users')">👥 Users</div>
+      <div class="admin-nav-item" onclick="adminTab('tab-ads')" style="position:relative">📢 Advertisements <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:var(--warn);color:#0a0f1a;font-size:9px;font-weight:700;padding:2px 6px;border-radius:100px">3</span></div>
+      <div class="divider"></div>
+      <div class="admin-nav-item" onclick="logout()">🚪 Log Out</div>
+    </div>
+    <div class="admin-content">
+      <div id="tab-requests">
+        <div class="admin-header">
+          <h1>Pharmacy Registration Requests</h1>
+          <p>Review and approve or reject new pharmacy applications</p>
+        </div>
+        <div class="admin-stats">
+          <div class="admin-stat-card"><div class="label">Pending</div><div class="value yellow">7</div></div>
+          <div class="admin-stat-card"><div class="label">Approved</div><div class="value green">241</div></div>
+          <div class="admin-stat-card"><div class="label">Rejected</div><div class="value" style="color:var(--danger)">12</div></div>
+          <div class="admin-stat-card"><div class="label">Total</div><div class="value blue">260</div></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Pharmacy Name</th><th>Owner</th><th>City</th><th>Submitted</th><th>License</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="requests-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-pharmacies" class="hidden">
+        <div class="admin-header">
+          <h1>All Pharmacies</h1>
+          <p>Manage all approved pharmacies in the system</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Name</th><th>City</th><th>Medicines</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="pharmacies-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-medicines" class="hidden">
+        <div class="admin-header">
+          <h1>Medicine Registry</h1>
+          <p>All medicines registered across pharmacies</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Medicine</th><th>Generic Name</th><th>Category</th><th>Pharmacy</th><th>Price (ETB)</th><th>Stock</th>
+            </tr></thead>
+            <tbody id="medicines-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-users" class="hidden">
+        <div class="admin-header">
+          <h1>Registered Users</h1>
+          <p>All pharmacy holders in the system</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Name</th><th>Email</th><th>Role</th><th>Pharmacy</th><th>Status</th>
+            </tr></thead>
+            <tbody id="users-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ★ ADS MANAGEMENT TAB ★ -->
+      <div id="tab-ads" class="hidden">
+        <div class="admin-header">
+          <h1>Advertisement Management</h1>
+          <p>Manage ad placements, packages, and revenue</p>
+        </div>
+
+        <!-- Revenue Stats -->
+        <div class="admin-stats" style="grid-template-columns:repeat(4,1fr);margin-bottom:28px">
+          <div class="admin-stat-card">
+            <div class="label">Monthly Revenue</div>
+            <div class="value green" style="font-size:20px">ETB 48,500</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="label">Active Ads</div>
+            <div class="value blue">12</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="label">Pending Approval</div>
+            <div class="value yellow">3</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="label">Total Impressions</div>
+            <div class="value" style="color:var(--accent);font-size:18px">142K</div>
+          </div>
+        </div>
+
+        <!-- Ad Packages -->
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Ad Packages</h3>
+        <div class="ad-package-grid">
+          <div class="ad-package-card">
+            <div class="pkg-name">Basic</div>
+            <div class="pkg-price">ETB 1,500</div>
+            <div class="pkg-period">per month</div>
+            <ul>
+              <li>Sidebar compact ad unit</li>
+              <li>1 placement location</li>
+              <li>Up to 5,000 impressions</li>
+              <li>Basic click tracking</li>
+            </ul>
+            <button class="pkg-btn">Manage</button>
+          </div>
+          <div class="ad-package-card featured">
+            <div class="pkg-badge">★ Most Popular</div>
+            <div class="pkg-name">Professional</div>
+            <div class="pkg-price">ETB 4,200</div>
+            <div class="pkg-period">per month</div>
+            <ul>
+              <li>Full sidebar banner card</li>
+              <li>3 placement locations</li>
+              <li>Up to 25,000 impressions</li>
+              <li>Analytics dashboard</li>
+              <li>Sponsored pharmacy badge</li>
+            </ul>
+            <button class="pkg-btn">Manage</button>
+          </div>
+          <div class="ad-package-card">
+            <div class="pkg-name">Premium</div>
+            <div class="pkg-price">ETB 9,800</div>
+            <div class="pkg-period">per month</div>
+            <ul>
+              <li>Hero banner on homepage</li>
+              <li>All sidebar placements</li>
+              <li>Inline strip ads in results</li>
+              <li>Sponsored top listing</li>
+              <li>Unlimited impressions</li>
+              <li>Dedicated account manager</li>
+            </ul>
+            <button class="pkg-btn">Manage</button>
+          </div>
+        </div>
+
+        <!-- Active Ads Table -->
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;margin-top:8px">Active & Pending Ads</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Advertiser</th><th>Package</th><th>Placement</th><th>Start</th><th>Expires</th><th>Impressions</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Ethio PharmaCo</strong></td>
+                <td><span style="color:var(--warn);font-size:12px;font-weight:600">Premium</span></td>
+                <td>Hero Banner + Sidebar</td>
+                <td style="color:var(--text2)">Mar 1, 2025</td>
+                <td style="color:var(--text2)">Apr 30, 2025</td>
+                <td class="mono" style="color:var(--accent)">38,210</td>
+                <td><div class="ad-status-active">Live</div></td>
+                <td><button class="action-btn view">Edit</button><button class="action-btn reject">Stop</button></td>
+              </tr>
+              <tr>
+                <td><strong>Medex Ethiopia</strong></td>
+                <td><span style="color:var(--accent);font-size:12px;font-weight:600">Professional</span></td>
+                <td>Browse Sidebar</td>
+                <td style="color:var(--text2)">Mar 10, 2025</td>
+                <td style="color:var(--text2)">Apr 9, 2025</td>
+                <td class="mono" style="color:var(--accent)">14,882</td>
+                <td><div class="ad-status-active">Live</div></td>
+                <td><button class="action-btn view">Edit</button><button class="action-btn reject">Stop</button></td>
+              </tr>
+              <tr>
+                <td><strong>HealthTech ET</strong></td>
+                <td><span style="color:var(--text2);font-size:12px;font-weight:600">Basic</span></td>
+                <td>Browse Sidebar</td>
+                <td style="color:var(--text2)">Mar 15, 2025</td>
+                <td style="color:var(--text2)">Apr 14, 2025</td>
+                <td class="mono" style="color:var(--accent)">6,043</td>
+                <td><div class="ad-status-active">Live</div></td>
+                <td><button class="action-btn view">Edit</button><button class="action-btn reject">Stop</button></td>
+              </tr>
+              <tr>
+                <td><strong>PharmEdu</strong></td>
+                <td><span style="color:var(--text2);font-size:12px;font-weight:600">Basic</span></td>
+                <td>Browse Sidebar</td>
+                <td style="color:var(--text2)">Mar 20, 2025</td>
+                <td style="color:var(--text2)">Apr 19, 2025</td>
+                <td class="mono" style="color:var(--accent)">3,200</td>
+                <td><div class="ad-status-active">Live</div></td>
+                <td><button class="action-btn view">Edit</button><button class="action-btn reject">Stop</button></td>
+              </tr>
+              <tr>
+                <td><strong>Zemen Hospital</strong></td>
+                <td><span style="color:var(--warn);font-size:12px;font-weight:600">Premium</span></td>
+                <td>Hero Banner + All</td>
+                <td style="color:var(--text2)">Apr 1, 2025</td>
+                <td style="color:var(--text2)">May 31, 2025</td>
+                <td class="mono" style="color:var(--text3)">—</td>
+                <td><div class="ad-status-pending">Pending</div></td>
+                <td><button class="action-btn approve">✓ Approve</button><button class="action-btn reject">✗ Reject</button></td>
+              </tr>
+              <tr>
+                <td><strong>Addis Medical</strong></td>
+                <td><span style="color:var(--accent);font-size:12px;font-weight:600">Professional</span></td>
+                <td>Pharmacy Sidebar</td>
+                <td style="color:var(--text2)">Apr 1, 2025</td>
+                <td style="color:var(--text2)">Apr 30, 2025</td>
+                <td class="mono" style="color:var(--text3)">—</td>
+                <td><div class="ad-status-pending">Pending</div></td>
+                <td><button class="action-btn approve">✓ Approve</button><button class="action-btn reject">✗ Reject</button></td>
+              </tr>
+              <tr>
+                <td><strong>EthioMed Lab</strong></td>
+                <td><span style="color:var(--accent);font-size:12px;font-weight:600">Professional</span></td>
+                <td>Browse Sidebar</td>
+                <td style="color:var(--text2)">Feb 1, 2025</td>
+                <td style="color:var(--text2)">Feb 28, 2025</td>
+                <td class="mono">21,540</td>
+                <td><div class="ad-status-expired">Expired</div></td>
+                <td><button class="action-btn view">Renew</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PHARMACY DASHBOARD ═══════════════════ -->
+<div id="page-dashboard" class="page">
+  <div class="dash-layout">
+    <div class="dash-sidebar">
+      <div class="dash-profile">
+        <div class="dash-avatar">🏥</div>
+        <h3 id="dash-pharmacy-name">My Pharmacy</h3>
+        <p id="dash-owner-name">Owner</p>
+        <div class="pending-badge" id="dash-status-badge">Pending Approval</div>
+      </div>
+      <div class="admin-nav-item active" onclick="dashTab('dash-overview')">📊 Overview</div>
+      <div class="admin-nav-item" onclick="dashTab('dash-medicines')">💊 My Medicines</div>
+      <div class="admin-nav-item" onclick="dashTab('dash-add')">➕ Add Medicine</div>
+      <div class="admin-nav-item" onclick="dashTab('dash-profile')">⚙️ Pharmacy Profile</div>
+      <div class="divider"></div>
+      <div class="admin-nav-item" onclick="logout()">🚪 Log Out</div>
+    </div>
+    <div class="dash-content">
+      <!-- Overview -->
+      <div id="dash-overview">
+        <div class="admin-header">
+          <h1>Welcome back 👋</h1>
+          <p>Here's a summary of your pharmacy's listings</p>
+        </div>
+        <div class="alert warn" id="pending-alert">⏳ Your pharmacy is awaiting admin approval. You can add medicines now, but they will be publicly visible once approved.</div>
+        <div class="admin-stats" style="grid-template-columns:repeat(3,1fr)">
+          <div class="admin-stat-card"><div class="label">Medicines Listed</div><div class="value blue" id="dash-med-count">0</div></div>
+          <div class="admin-stat-card"><div class="label">In Stock</div><div class="value green" id="dash-stock-count">0</div></div>
+          <div class="admin-stat-card"><div class="label">Profile Views</div><div class="value">147</div></div>
+        </div>
+      </div>
+
+      <!-- My Medicines -->
+      <div id="dash-medicines" class="hidden">
+        <div class="admin-header">
+          <h1>My Medicines</h1>
+          <p>Manage your pharmacy's medicine inventory</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Medicine Name</th><th>Generic</th><th>Price (ETB)</th><th>Stock</th><th>Type</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="my-medicines-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Add Medicine -->
+      <div id="dash-add" class="hidden">
+        <div class="admin-header">
+          <h1>Add Medicine</h1>
+          <p>Register a new medicine in your pharmacy</p>
+        </div>
+        <div style="max-width:560px">
+          <div class="form-group">
+            <label>Medicine (Brand) Name *</label>
+            <input type="text" id="med-brand" placeholder="e.g. Augmentin">
+          </div>
+          <div class="form-group">
+            <label>Generic Name *</label>
+            <input type="text" id="med-generic" placeholder="e.g. Amoxicillin/Clavulanate">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Category</label>
+              <select id="med-category">
+                <option>Antibiotic</option>
+                <option>Analgesic</option>
+                <option>Antimalaria</option>
+                <option>Antidiabetic</option>
+                <option>Antihypertensive</option>
+                <option>Antiparasitic</option>
+                <option>Supplement</option>
+                <option>Antacid</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Type</label>
+              <select id="med-type">
+                <option>Prescription (Rx)</option>
+                <option>Over the Counter</option>
+                <option>Controlled</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Price (ETB) *</label>
+              <input type="number" id="med-price" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label>Unit / Dosage</label>
+              <input type="text" id="med-unit" placeholder="e.g. 500mg, 10 tablets">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Stock Status</label>
+            <select id="med-stock">
+              <option value="in">In Stock</option>
+              <option value="low">Low Stock</option>
+              <option value="out">Out of Stock</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Description / Notes</label>
+            <textarea id="med-desc" placeholder="Any additional information about this medicine…"></textarea>
+          </div>
+          <button class="btn primary" onclick="addMedicine()">Add Medicine to Inventory</button>
+        </div>
+      </div>
+
+      <!-- Profile -->
+      <div id="dash-profile" class="hidden">
+        <div class="admin-header">
+          <h1>Pharmacy Profile</h1>
+          <p>Update your pharmacy information</p>
+        </div>
+        <div style="max-width:560px">
+          <div class="form-group">
+            <label>Pharmacy Name</label>
+            <input type="text" id="profile-name" value="Sunrise Pharmacy">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>City</label>
+              <select id="profile-city">
+                <option>Addis Ababa</option><option>Dire Dawa</option><option>Mekelle</option>
+                <option>Bahir Dar</option><option>Hawassa</option><option>Gondar</option>
+                <option>Jimma</option><option>Adama</option><option>Harar</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Sub-city / Woreda</label>
+              <input type="text" placeholder="e.g. Bole, Woreda 2">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Full Address</label>
+            <textarea placeholder="Street address, landmark…"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" placeholder="+251 91 000 0000">
+            </div>
+            <div class="form-group">
+              <label>License Number</label>
+              <input type="text" placeholder="ETH-PHARM-XXXXX">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Opening Hours</label>
+            <input type="text" placeholder="e.g. Mon–Fri 8AM–8PM, Sat 9AM–6PM">
+          </div>
+          <button class="btn primary" onclick="showToast('Profile updated successfully!','success')">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MODALS ═══════════════════ -->
+
+<!-- Login Modal -->
+<div class="modal-overlay" id="loginModal" onclick="if(event.target===this)closeModal('loginModal')">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2>Welcome back</h2>
+        <p>Sign in to your account</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('loginModal')">×</button>
+    </div>
+
+    <div class="form-tabs">
+      <div class="form-tab active" onclick="loginAs('public',this)">Public User</div>
+      <div class="form-tab" onclick="loginAs('pharmacy',this)">Pharmacy Holder</div>
+      <div class="form-tab" onclick="loginAs('admin',this)">Admin</div>
+    </div>
+
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="login-email" placeholder="your@email.com">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="Enter your password">
+    </div>
+
+    <button class="btn primary" onclick="doLogin()">Sign In</button>
+    <div class="form-link">
+      Don't have an account? <a onclick="closeModal('loginModal');openModal('signupModal')">Register here</a>
+    </div>
+  </div>
+</div>
+
+<!-- Signup Modal -->
+<div class="modal-overlay" id="signupModal" onclick="if(event.target===this)closeModal('signupModal')">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div>
+        <h2>Create an account</h2>
+        <p>Join MedFind Ethiopia</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('signupModal')">×</button>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">I am registering as…</div>
+      <div class="role-cards">
+        <div class="role-card selected" id="role-public" onclick="selectRole('public')">
+          <div class="role-icon">🔍</div>
+          <div class="role-name">General User</div>
+          <div class="role-desc">Search & find medicines</div>
+        </div>
+        <div class="role-card" id="role-pharmacy" onclick="selectRole('pharmacy')">
+          <div class="role-icon">🏥</div>
+          <div class="role-name">Pharmacy Holder</div>
+          <div class="role-desc">Register & list medicines</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>First Name *</label>
+        <input type="text" id="signup-first" placeholder="Abebe">
+      </div>
+      <div class="form-group">
+        <label>Last Name *</label>
+        <input type="text" id="signup-last" placeholder="Bekele">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Email Address *</label>
+      <input type="email" id="signup-email" placeholder="abebe@example.com">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Password *</label>
+        <input type="password" id="signup-password" placeholder="Min 8 characters">
+      </div>
+      <div class="form-group">
+        <label>Confirm Password *</label>
+        <input type="password" placeholder="Repeat password">
+      </div>
+    </div>
+
+    <!-- Pharmacy-specific fields -->
+    <div id="pharmacy-fields" class="hidden">
+      <div class="divider"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">Pharmacy Information</div>
+      <div class="form-group">
+        <label>Pharmacy Name *</label>
+        <input type="text" id="pharm-name" placeholder="e.g. Sunrise Pharmacy">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>City *</label>
+          <select id="pharm-city">
+            <option value="">Select city…</option>
+            <option>Addis Ababa</option><option>Dire Dawa</option><option>Mekelle</option>
+            <option>Bahir Dar</option><option>Hawassa</option><option>Gondar</option>
+            <option>Jimma</option><option>Adama</option><option>Harar</option>
+            <option>Dilla</option><option>Shashamane</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>License Number *</label>
+          <input type="text" id="pharm-license" placeholder="ETH-PHARM-XXXXX">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Full Address</label>
+        <input type="text" id="pharm-address" placeholder="Street address, Sub-city, Woreda…">
+      </div>
+      <div class="form-group">
+        <label>Phone Number *</label>
+        <input type="tel" id="pharm-phone" placeholder="+251 91 000 0000">
+      </div>
+      <div class="alert warn">⏳ Your pharmacy account will be reviewed and approved by an admin before going live.</div>
+    </div>
+
+    <button class="btn primary" onclick="doSignup()">Create Account</button>
+    <div class="form-link">
+      Already have an account? <a onclick="closeModal('signupModal');openModal('loginModal')">Sign in</a>
+    </div>
+  </div>
+</div>
+
+<!-- Medicine Detail Modal -->
+<div class="modal-overlay" id="medModal" onclick="if(event.target===this)closeModal('medModal')">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2 id="med-modal-name">—</h2>
+        <p id="med-modal-generic" style="font-style:italic">—</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('medModal')">×</button>
+    </div>
+    <div id="med-modal-body"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ ADVERTISE MODAL ═══════════════════ -->
+<div class="modal-overlay" id="advertiseModal" onclick="if(event.target===this)closeModal('advertiseModal')">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div>
+        <h2>Advertise on MedFind Ethiopia</h2>
+        <p>Reach thousands of pharmacy customers daily</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('advertiseModal')">×</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+      <div style="background:var(--surface2);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:22px;font-family:'JetBrains Mono',monospace;color:var(--accent)">14,000+</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:3px">Monthly Visitors</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:22px;font-family:'JetBrains Mono',monospace;color:var(--accent2)">248</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:3px">Registered Pharmacies</div>
+      </div>
+    </div>
+
+    <div class="ad-package-grid" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="ad-package-card" style="padding:16px">
+        <div class="pkg-name" style="font-size:13px">Basic</div>
+        <div class="pkg-price" style="font-size:20px">ETB 1,500</div>
+        <div class="pkg-period">/month</div>
+        <ul style="font-size:11px">
+          <li>Compact sidebar ad</li>
+          <li>5,000 impressions</li>
+          <li>1 page placement</li>
+        </ul>
+        <button class="pkg-btn" onclick="closeModal('advertiseModal');showToast('Our team will contact you shortly!','success')">Get Started</button>
+      </div>
+      <div class="ad-package-card featured" style="padding:16px">
+        <div class="pkg-badge">Popular</div>
+        <div class="pkg-name" style="font-size:13px">Professional</div>
+        <div class="pkg-price" style="font-size:20px">ETB 4,200</div>
+        <div class="pkg-period">/month</div>
+        <ul style="font-size:11px">
+          <li>Full banner card</li>
+          <li>25,000 impressions</li>
+          <li>3 page placements</li>
+          <li>Sponsored badge</li>
+        </ul>
+        <button class="pkg-btn" onclick="closeModal('advertiseModal');showToast('Our team will contact you shortly!','success')">Get Started</button>
+      </div>
+      <div class="ad-package-card" style="padding:16px">
+        <div class="pkg-name" style="font-size:13px">Premium</div>
+        <div class="pkg-price" style="font-size:20px">ETB 9,800</div>
+        <div class="pkg-period">/month</div>
+        <ul style="font-size:11px">
+          <li>Hero homepage banner</li>
+          <li>Unlimited impressions</li>
+          <li>All placements</li>
+          <li>Top search listing</li>
+        </ul>
+        <button class="pkg-btn" onclick="closeModal('advertiseModal');showToast('Our team will contact you shortly!','success')">Get Started</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h4 style="font-size:13px;font-weight:600;margin-bottom:14px">Request Custom Package</h4>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Your Company / Brand Name</label>
+        <input type="text" placeholder="e.g. Ethio PharmaCo">
+      </div>
+      <div class="form-group">
+        <label>Phone / Email</label>
+        <input type="text" placeholder="+251 91 000 0000">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Tell us about your advertising goal</label>
+      <textarea placeholder="What product/service are you promoting? Target audience?"></textarea>
+    </div>
+    <button class="btn primary" onclick="closeModal('advertiseModal');showToast('Request submitted! We\'ll reach out within 24 hours.','success')">Submit Inquiry</button>
+  </div>
+</div>
+
+<!-- ★ STICKY FLOATING AD (appears after scrolling) ★ -->
+<div class="sticky-ad" id="sticky-ad">
+  <button class="sticky-ad-close" onclick="document.getElementById('sticky-ad').style.display='none'">×</button>
+  <div style="font-size:10px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px">★ Sponsored</div>
+  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Advertise Your Pharmacy</div>
+  <div style="font-size:11px;color:var(--text2);margin-bottom:12px">Reach 14,000+ monthly visitors on MedFind Ethiopia</div>
+  <button onclick="closeModal('x');openModal('advertiseModal');document.getElementById('sticky-ad').style.display='none'" style="width:100%;padding:9px;background:var(--accent);color:#0a0f1a;border:none;border-radius:7px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">View Ad Plans →</button>
+</div>
+
+<!-- ═══════════════════ JAVASCRIPT ═══════════════════ -->
+<script>
+// ─── DATA ───
+const PHARMACIES = [
+  { id:1, name:'Sunrise Pharmacy', city:'Addis Ababa', area:'Bole', address:'Bole Road, Near Friendship Hotel', phone:'+251 91 123 4567', email:'sunrise@pharmacy.et', license:'ETH-PHARM-00142', open:true, tags:['24/7','Prescription','OTC'], icon:'🌅', medCount:48, owner:'Abebe Bekele' },
+  { id:2, name:'Medlife Pharmacy', city:'Addis Ababa', area:'Kazanchis', address:'Kazanchis, Near Sheraton Hotel', phone:'+251 91 234 5678', email:'medlife@pharmacy.et', license:'ETH-PHARM-00087', open:true, tags:['Prescription','OTC','Injection'], icon:'💉', medCount:62, owner:'Tigist Alemu' },
+  { id:3, name:'Hayat Pharmacy', city:'Dire Dawa', area:'Kezira', address:'Kezira District, Main Street', phone:'+251 25 111 2233', email:'hayat@pharmacy.et', license:'ETH-PHARM-00203', open:false, tags:['OTC','Generic'], icon:'🌿', medCount:31, owner:'Mohammed Hassen' },
+  { id:4, name:'Green Cross Pharmacy', city:'Mekelle', area:'Ayder', address:'Ayder Road, Near Ayder Hospital', phone:'+251 34 441 5566', email:'greencross@pharmacy.et', license:'ETH-PHARM-00118', open:true, tags:['Prescription','24/7'], icon:'✚', medCount:55, owner:'Yohannes Tesfaye' },
+  { id:5, name:'Nile Pharmacy', city:'Bahir Dar', area:'City Center', address:'Main Square, Ground Floor', phone:'+251 58 220 1234', email:'nile@pharmacy.et', license:'ETH-PHARM-00176', open:true, tags:['OTC','Supplement'], icon:'🌊', medCount:27, owner:'Almaz Girma' },
+  { id:6, name:'Rift Valley Pharmacy', city:'Hawassa', area:'Tabor', address:'Tabor District, Hawassa University Road', phone:'+251 46 212 3344', email:'rift@pharmacy.et', license:'ETH-PHARM-00099', open:true, tags:['Prescription','Antimalaria'], icon:'🏔️', medCount:39, owner:'Dawit Kebede' },
+];
+
+const MEDICINES = [
+  { id:1, name:'Amoxicillin 500mg', generic:'Amoxicillin', category:'Antibiotic', type:'Rx', price:45, unit:'per 10 capsules', stock:'in', pharmacy:1 },
+  { id:2, name:'Paracetamol 500mg', generic:'Acetaminophen', category:'Analgesic', type:'OTC', price:12, unit:'per 10 tablets', stock:'in', pharmacy:1 },
+  { id:3, name:'Metformin 850mg', generic:'Metformin HCl', category:'Antidiabetic', type:'Rx', price:38, unit:'per 14 tablets', stock:'in', pharmacy:2 },
+  { id:4, name:'Artemether/Lumefantrine', generic:'CoArtem 20/120mg', category:'Antimalaria', type:'Rx', price:95, unit:'per 24 tablets', stock:'low', pharmacy:2 },
+  { id:5, name:'Omeprazole 20mg', generic:'Omeprazole', category:'Antacid', type:'OTC', price:28, unit:'per 14 capsules', stock:'in', pharmacy:3 },
+  { id:6, name:'Ibuprofen 400mg', generic:'Ibuprofen', category:'Analgesic', type:'OTC', price:18, unit:'per 10 tablets', stock:'in', pharmacy:4 },
+  { id:7, name:'Atorvastatin 40mg', generic:'Atorvastatin', category:'Antihypertensive', type:'Rx', price:72, unit:'per 14 tablets', stock:'in', pharmacy:5 },
+  { id:8, name:'Albendazole 400mg', generic:'Albendazole', category:'Antiparasitic', type:'OTC', price:22, unit:'per tablet', stock:'out', pharmacy:6 },
+  { id:9, name:'Ciprofloxacin 500mg', generic:'Ciprofloxacin HCl', category:'Antibiotic', type:'Rx', price:55, unit:'per 10 tablets', stock:'in', pharmacy:2 },
+  { id:10, name:'Vitamin D3 1000IU', generic:'Cholecalciferol', category:'Supplement', type:'OTC', price:85, unit:'per 30 softgels', stock:'in', pharmacy:1 },
+  { id:11, name:'Losartan 50mg', generic:'Losartan Potassium', category:'Antihypertensive', type:'Rx', price:48, unit:'per 14 tablets', stock:'low', pharmacy:3 },
+  { id:12, name:'Mebendazole 100mg', generic:'Mebendazole', category:'Antiparasitic', type:'OTC', price:15, unit:'per 6 tablets', stock:'in', pharmacy:4 },
+];
+
+const REQUESTS = [
+  { pharmacy:'Hope Medical Pharmacy', owner:'Selam Tesfaw', city:'Addis Ababa', date:'Mar 28, 2025', license:'ETH-PHARM-00261' },
+  { pharmacy:'Ethio Care Pharmacy', owner:'Biruk Haile', city:'Gondar', date:'Mar 25, 2025', license:'ETH-PHARM-00262' },
+  { pharmacy:'Zara Pharmacy', owner:'Fatuma Abdella', city:'Jimma', date:'Mar 22, 2025', license:'ETH-PHARM-00263' },
+  { pharmacy:'Unity Pharmacy', owner:'Henok Girma', city:'Adama', date:'Mar 19, 2025', license:'ETH-PHARM-00264' },
+  { pharmacy:'Blue Nile Pharmacy', owner:'Meron Alemu', city:'Bahir Dar', date:'Mar 15, 2025', license:'ETH-PHARM-00265' },
+  { pharmacy:'Star Pharmacy', owner:'Yared Tsegay', city:'Mekelle', date:'Mar 10, 2025', license:'ETH-PHARM-00266' },
+  { pharmacy:'Excel Pharmacy', owner:'Hana Bekele', city:'Hawassa', date:'Mar 05, 2025', license:'ETH-PHARM-00267' },
+];
+
+let currentRole = 'public';
+let selectedRole = 'public';
+let myMedicines = [];
+let currentPharmacyId = null;
+
+// ─── STATE ───
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ─── RENDER FEATURED ───
+function renderFeatured() {
+  const container = document.getElementById('featured-pharmacies');
+  container.innerHTML = PHARMACIES.slice(0,6).map(p => `
+    <div class="pharmacy-card" onclick="showPharmacy(${p.id})">
+      <div class="card-header">
+        <div class="card-icon">${p.icon}</div>
+        <div class="status-badge ${p.open?'open':'closed'}">${p.open?'Open':'Closed'}</div>
+      </div>
+      <h3>${p.name}</h3>
+      <div class="card-loc">📍 ${p.area}, ${p.city}</div>
+      <div class="card-tags">${p.tags.map(t=>`<span class="card-tag">${t}</span>`).join('')}</div>
+      <div class="card-footer">
+        <span class="card-meta">${p.phone}</span>
+        <span class="card-count">${p.medCount} medicines</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderRecent() {
+  const container = document.getElementById('recent-medicines');
+  container.innerHTML = MEDICINES.slice(0,6).map(m => medCardHTML(m)).join('');
+}
+
+function medCardHTML(m) {
+  const pharm = PHARMACIES.find(p=>p.id===m.pharmacy);
+  const stockMap = { in:'in', low:'low', out:'out' };
+  const stockLabel = { in:'In Stock', low:'Low Stock', out:'Out of Stock' };
+  return `
+    <div class="med-card" onclick="openMedModal(${m.id})">
+      <div class="med-header">
+        <div class="med-name">${m.name}</div>
+        <div class="med-type">${m.type}</div>
+      </div>
+      <div class="med-generic">${m.generic}</div>
+      <div class="med-price">ETB ${m.price} <span>/ ${m.unit}</span></div>
+      <div class="med-pharmacy">
+        <span>${pharm?.icon||'🏥'}</span>
+        <div><strong>${pharm?.name||'—'}</strong><br>${pharm?.city||'—'}</div>
+      </div>
+      <div class="med-stock">
+        <div class="stock-dot ${stockMap[m.stock]}"></div>
+        <span style="color:var(--text3)">${stockLabel[m.stock]}</span>
+      </div>
+    </div>
+  `;
+}
+
+// ─── SEARCH ───
+function showSearchPage(query) {
+  document.getElementById('results-search').value = query;
+  filterResults(query);
+  showPage('search');
+}
+
+function filterResults(query) {
+  const q = query.toLowerCase().trim();
+  const results = q
+    ? MEDICINES.filter(m =>
+        m.name.toLowerCase().includes(q) ||
+        m.generic.toLowerCase().includes(q) ||
+        m.category.toLowerCase().includes(q)
+      )
+    : MEDICINES;
+
+  document.getElementById('results-count').innerHTML = `Showing <strong>${results.length}</strong> results${q?' for "'+query+'"':''}`;
+  document.getElementById('search-results').innerHTML = results.length
+    ? results.map(m => medCardHTML(m)).join('')
+    : '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text3)">No medicines found. Try a different search.</div>';
+}
+
+// ─── MED MODAL ───
+function openMedModal(id) {
+  const m = MEDICINES.find(x=>x.id===id);
+  const pharm = PHARMACIES.find(p=>p.id===m.pharmacy);
+  if(!m) return;
+  document.getElementById('med-modal-name').textContent = m.name;
+  document.getElementById('med-modal-generic').textContent = m.generic;
+  const stockLabel = { in:'In Stock', low:'Low Stock (order soon)', out:'Out of Stock' };
+  const stockColor = { in:'var(--success)', low:'var(--warn)', out:'var(--danger)' };
+  document.getElementById('med-modal-body').innerHTML = `
+    <div style="display:grid;gap:12px">
+      <div style="background:var(--surface2);border-radius:10px;padding:16px;display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-size:11px;color:var(--text3)">PRICE</div><div style="font-size:26px;font-family:'JetBrains Mono',monospace;color:var(--accent)">ETB ${m.price}</div><div style="font-size:11px;color:var(--text3)">${m.unit}</div></div>
+        <div style="text-align:right"><div style="font-size:11px;color:var(--text3)">AVAILABILITY</div><div style="color:${stockColor[m.stock]};font-weight:600;font-size:13px;margin-top:4px">${stockLabel[m.stock]}</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:var(--surface2);border-radius:10px;padding:14px"><div style="font-size:11px;color:var(--text3)">CATEGORY</div><div style="margin-top:4px;font-size:13px">${m.category}</div></div>
+        <div style="background:var(--surface2);border-radius:10px;padding:14px"><div style="font-size:11px;color:var(--text3)">TYPE</div><div style="margin-top:4px;font-size:13px">${m.type==='Rx'?'Prescription (Rx)':m.type}</div></div>
+      </div>
+      <div style="background:var(--surface2);border-radius:10px;padding:14px;cursor:pointer" onclick="closeModal('medModal');showPharmacy(${pharm?.id})">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px">SOLD AT</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:24px">${pharm?.icon||'🏥'}</div>
+          <div>
+            <div style="font-weight:600">${pharm?.name||'—'}</div>
+            <div style="font-size:12px;color:var(--text2)">📍 ${pharm?.area}, ${pharm?.city}</div>
+            <div style="font-size:12px;color:var(--text2)">${pharm?.phone||''}</div>
+          </div>
+          <div style="margin-left:auto;color:var(--accent);font-size:12px">View Pharmacy →</div>
+        </div>
+      </div>
+    </div>
+  `;
+  openModal('medModal');
+}
+
+// ─── PHARMACY DETAIL ───
+function showPharmacy(id) {
+  currentPharmacyId = id;
+  const p = PHARMACIES.find(x=>x.id===id);
+  if(!p) return;
+
+  document.getElementById('pharmacy-detail-header').innerHTML = `
+    <div class="detail-icon">${p.icon}</div>
+    <div class="detail-info">
+      <h2>${p.name}</h2>
+      <div style="font-size:13px;color:var(--text2)">${p.area}, ${p.city}</div>
+      <div class="detail-meta">
+        <div class="detail-meta-item">📞 ${p.phone}</div>
+        <div class="detail-meta-item">📧 ${p.email}</div>
+        <div class="detail-meta-item"><span class="status-badge ${p.open?'open':'closed'}">${p.open?'Open Now':'Closed'}</span></div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('detail-name').textContent = p.name;
+  document.getElementById('detail-license').textContent = p.license;
+  document.getElementById('detail-phone').textContent = p.phone;
+  document.getElementById('detail-email').textContent = p.email;
+  document.getElementById('detail-address').textContent = p.address;
+
+  const meds = MEDICINES.filter(m=>m.pharmacy===id);
+  document.getElementById('tab-medicines').innerHTML = meds.length
+    ? meds.map(m=>medCardHTML(m)).join('')
+    : '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text3)">No medicines listed yet.</div>';
+
+  // Reset tabs
+  document.querySelectorAll('.detail-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.detail-tab')[0].classList.add('active');
+  document.getElementById('tab-medicines').classList.remove('hidden');
+  document.getElementById('tab-info').classList.add('hidden');
+  document.getElementById('tab-location').classList.add('hidden');
+
+  showPage('pharmacy');
+}
+
+function switchDetailTab(el, tabId) {
+  document.querySelectorAll('.detail-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['tab-medicines','tab-info','tab-location'].forEach(id=>{
+    document.getElementById(id).classList.toggle('hidden', id!==tabId);
+  });
+}
+
+// ─── AUTH ───
+let loginRole = 'public';
+
+function loginAs(role, el) {
+  loginRole = role;
+  document.querySelectorAll('.form-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-password').value;
+  if(!email || !pw) { showToast('Please fill in all fields', 'error'); return; }
+
+  closeModal('loginModal');
+
+  if(loginRole === 'admin') {
+    currentRole = 'admin';
+    updateNav();
+    renderAdminTables();
+    showPage('admin');
+    showToast('Welcome, Admin!', 'success');
+  } else if(loginRole === 'pharmacy') {
+    currentRole = 'pharmacy';
+    updateNav();
+    updateDashboard();
+    showPage('dashboard');
+    showToast('Welcome back, Pharmacy Holder!', 'success');
+  } else {
+    currentRole = 'public';
+    showToast('Welcome back!', 'success');
+  }
+}
+
+function selectRole(role) {
+  selectedRole = role;
+  document.getElementById('role-public').classList.toggle('selected', role==='public');
+  document.getElementById('role-pharmacy').classList.toggle('selected', role==='pharmacy');
+  document.getElementById('pharmacy-fields').classList.toggle('hidden', role!=='pharmacy');
+}
+
+function doSignup() {
+  const first = document.getElementById('signup-first').value.trim();
+  const last = document.getElementById('signup-last').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const pw = document.getElementById('signup-password').value;
+
+  if(!first || !last || !email || !pw) { showToast('Please fill in all required fields', 'error'); return; }
+
+  if(selectedRole === 'pharmacy') {
+    const phName = document.getElementById('pharm-name').value.trim();
+    const phCity = document.getElementById('pharm-city').value;
+    const phLic = document.getElementById('pharm-license').value.trim();
+    const phPhone = document.getElementById('pharm-phone').value.trim();
+    if(!phName || !phCity || !phLic || !phPhone) { showToast('Please fill in pharmacy details', 'error'); return; }
+
+    closeModal('signupModal');
+    currentRole = 'pharmacy';
+    document.getElementById('dash-pharmacy-name').textContent = phName;
+    document.getElementById('dash-owner-name').textContent = `${first} ${last}`;
+    document.getElementById('profile-name').value = phName;
+    document.getElementById('profile-city').value = phCity;
+    updateNav();
+    showPage('dashboard');
+    showToast('Account created! Awaiting admin approval.', 'success');
+  } else {
+    closeModal('signupModal');
+    currentRole = 'public';
+    showToast('Account created! Welcome to MedFind Ethiopia.', 'success');
+  }
+}
+
+function logout() {
+  currentRole = 'public';
+  myMedicines = [];
+  updateNav();
+  showPage('home');
+  showToast('Logged out successfully', 'success');
+}
+
+// ─── ADMIN ───
+function adminTab(id) {
+  ['tab-requests','tab-pharmacies','tab-medicines','tab-users','tab-ads'].forEach(t=>{
+    document.getElementById(t).classList.toggle('hidden', t!==id);
+  });
+  document.querySelectorAll('.admin-nav-item').forEach((el,i)=>{
+    el.classList.toggle('active', i===['tab-requests','tab-pharmacies','tab-medicines','tab-users','tab-ads'].indexOf(id));
+  });
+}
+
+function renderAdminTables() {
+  // Requests
+  document.getElementById('requests-table').innerHTML = REQUESTS.map((r,i)=>`
+    <tr>
+      <td><strong>${r.pharmacy}</strong></td>
+      <td>${r.owner}</td>
+      <td>📍 ${r.city}</td>
+      <td style="color:var(--text3)">${r.date}</td>
+      <td class="mono" style="color:var(--accent2);font-size:12px">${r.license}</td>
+      <td>
+        <button class="action-btn approve" onclick="approveRequest(this,${i})">✓ Approve</button>
+        <button class="action-btn reject" onclick="this.closest('tr').style.opacity='0.4'">✗ Reject</button>
+      </td>
+    </tr>
+  `).join('');
+
+  // Pharmacies
+  document.getElementById('pharmacies-table').innerHTML = PHARMACIES.map(p=>`
+    <tr>
+      <td><strong>${p.icon} ${p.name}</strong></td>
+      <td>📍 ${p.city}</td>
+      <td class="mono" style="color:var(--accent)">${p.medCount}</td>
+      <td><span class="status-badge ${p.open?'open':'closed'}">${p.open?'Active':'Inactive'}</span></td>
+      <td><button class="action-btn view" onclick="showPharmacy(${p.id})">View</button></td>
+    </tr>
+  `).join('');
+
+  // Medicines
+  document.getElementById('medicines-table').innerHTML = MEDICINES.map(m=>{
+    const ph=PHARMACIES.find(p=>p.id===m.pharmacy);
+    const sc={in:'<span style="color:var(--success)">In Stock</span>',low:'<span style="color:var(--warn)">Low</span>',out:'<span style="color:var(--danger)">Out</span>'};
+    return `<tr>
+      <td><strong>${m.name}</strong></td>
+      <td style="color:var(--text2);font-style:italic">${m.generic}</td>
+      <td>${m.category}</td>
+      <td>${ph?.name||'—'}</td>
+      <td class="mono">ETB ${m.price}</td>
+      <td>${sc[m.stock]}</td>
+    </tr>`;
+  }).join('');
+
+  // Users
+  document.getElementById('users-table').innerHTML = PHARMACIES.map(p=>`
+    <tr>
+      <td><strong>${p.owner}</strong></td>
+      <td style="color:var(--text2)">${p.email}</td>
+      <td>Pharmacy Holder</td>
+      <td>${p.name}</td>
+      <td><span class="status-badge open">Active</span></td>
+    </tr>
+  `).join('');
+}
+
+function approveRequest(btn, i) {
+  btn.closest('tr').style.opacity = '0.4';
+  showToast(`${REQUESTS[i].pharmacy} approved!`, 'success');
+}
+
+// ─── DASHBOARD ───
+function dashTab(id) {
+  ['dash-overview','dash-medicines','dash-add','dash-profile'].forEach(t=>{
+    document.getElementById(t).classList.toggle('hidden', t!==id);
+  });
+  document.querySelectorAll('.admin-nav-item').forEach((el,i)=>{
+    el.classList.toggle('active', i===['dash-overview','dash-medicines','dash-add','dash-profile'].indexOf(id));
+  });
+  if(id==='dash-medicines') renderMyMedicines();
+}
+
+function updateDashboard() {
+  document.getElementById('dash-med-count').textContent = myMedicines.length;
+  document.getElementById('dash-stock-count').textContent = myMedicines.filter(m=>m.stock==='in').length;
+}
+
+function addMedicine() {
+  const brand = document.getElementById('med-brand').value.trim();
+  const generic = document.getElementById('med-generic').value.trim();
+  const price = document.getElementById('med-price').value;
+  const unit = document.getElementById('med-unit').value.trim() || 'per unit';
+  if(!brand || !generic || !price) { showToast('Please fill in required fields', 'error'); return; }
+
+  const med = {
+    id: Date.now(),
+    name: brand,
+    generic,
+    category: document.getElementById('med-category').value,
+    type: document.getElementById('med-type').value.startsWith('Prescription') ? 'Rx' : 'OTC',
+    price: parseFloat(price),
+    unit,
+    stock: document.getElementById('med-stock').value,
+    desc: document.getElementById('med-desc').value,
+  };
+  myMedicines.push(med);
+
+  // Clear form
+  ['med-brand','med-generic','med-price','med-unit','med-desc'].forEach(id=>document.getElementById(id).value='');
+
+  updateDashboard();
+  showToast(`${brand} added to your inventory!`, 'success');
+  dashTab('dash-medicines');
+}
+
+function renderMyMedicines() {
+  const tbody = document.getElementById('my-medicines-table');
+  if(!myMedicines.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:40px">No medicines added yet. <a onclick="dashTab(\'dash-add\')" style="color:var(--accent);cursor:pointer">Add your first medicine →</a></td></tr>';
+    return;
+  }
+  const sc={in:'<span style="color:var(--success)">In Stock</span>',low:'<span style="color:var(--warn)">Low</span>',out:'<span style="color:var(--danger)">Out</span>'};
+  tbody.innerHTML = myMedicines.map((m,i)=>`
+    <tr>
+      <td><strong>${m.name}</strong></td>
+      <td style="font-style:italic;color:var(--text2)">${m.generic}</td>
+      <td class="mono">ETB ${m.price}</td>
+      <td>${sc[m.stock]}</td>
+      <td>${m.type}</td>
+      <td><button class="action-btn reject" onclick="removeMedicine(${i})">Remove</button></td>
+    </tr>
+  `).join('');
+}
+
+function removeMedicine(idx) {
+  myMedicines.splice(idx,1);
+  updateDashboard();
+  renderMyMedicines();
+  showToast('Medicine removed', 'success');
+}
+
+// ─── TOAST ───
+function showToast(msg, type='success') {
+  const existing = document.querySelector('.toast');
+  if(existing) existing.remove();
+  const icon = type==='success' ? '✅' : '❌';
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span class="toast-icon">${icon}</span><span>${msg}</span>`;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='scale(0.9)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(),300); }, 3000);
+}
+
+// ─── INIT ───
+renderFeatured();
+renderRecent();
+filterResults('');
+
+// ── Sticky ad: show after scrolling 600px on home page ──
+let stickyShown = false;
+window.addEventListener('scroll', () => {
+  if(!stickyShown && window.scrollY > 600 && document.getElementById('page-home').classList.contains('active') && currentRole === 'public') {
+    const sa = document.getElementById('sticky-ad');
+    sa.style.display = 'block';
+    stickyShown = true;
+  }
+});
+
+// ── Add "Advertise" link in nav ──
+// (rendered separately via updateNav — add to public nav)
+function updateNav() {
+  const nl = document.getElementById('nav-links');
+  if(currentRole === 'admin') {
+    nl.innerHTML = `<button class="nav-btn ghost" onclick="showPage('admin')">Admin Panel</button><button class="nav-btn primary" onclick="logout()">Log Out</button>`;
+  } else if(currentRole === 'pharmacy') {
+    nl.innerHTML = `<button class="nav-btn ghost" onclick="showPage('dashboard')">Dashboard</button><button class="nav-btn ghost" onclick="showPage('home')">Browse</button><button class="nav-btn primary" onclick="logout()">Log Out</button>`;
+  } else {
+    nl.innerHTML = `<button class="nav-btn ghost" onclick="showPage('home')">Home</button><button class="nav-btn ghost" onclick="showSearchPage('')">Browse</button><button class="nav-btn ghost" onclick="openModal('advertiseModal')" style="color:var(--warn)">★ Advertise</button><button class="nav-btn ghost" onclick="openModal('loginModal')">Log In</button><button class="nav-btn primary" onclick="openModal('signupModal')">Register</button>`;
+  }
+}
+updateNav();
+</script>
+</body>
+</html>
